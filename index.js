@@ -49,7 +49,7 @@ window.addEventListener("keydown", function (event) {
 
 function reset() {
   clearInterval(draw_interval)
-  interval = 80
+  interval = 12
   draw_interval = setInterval(drawSnake, interval)
 
   ctx.clearRect(0, 0, canvas.width, canvas.height)
@@ -83,25 +83,25 @@ function drawSnake() {
     if (head.x == canvas.width -10) {
       path.push({ x: 0, y: head.y });
     } else {
-      path.push({ x: head.x + 10, y: head.y });
+      path.push({ x: head.x + 1, y: head.y });
     }
   } else if ( direction == "L" ) {
     if (head.x == 0) {
       path.push({ x: canvas.width -10, y: head.y });
     } else {
-      path.push({ x: head.x - 10, y: head.y });
+      path.push({ x: head.x - 1, y: head.y });
     }
   } else if (direction == "U") {
     if (head.y == 0) {
       path.push({ x: head.x, y: canvas.height -10 });
     } else {
-      path.push({ x: head.x, y: head.y - 10 });
+      path.push({ x: head.x, y: head.y - 1 });
     }
   } else if (direction == "D") {
     if (head.y == canvas.height - 10) {
       path.push({ x: head.x, y: 0 });
     } else {
-      path.push({ x: head.x, y: head.y + 10 });
+      path.push({ x: head.x, y: head.y + 1 });
     }
   }
 
@@ -121,19 +121,28 @@ function drawSnake() {
     reset()
   }
 
-  const snack = snacks[0];
-  if (head.x == snack.x && head.y == snack.y) {
-    createSnacks();
+  let snack = snacks[0];
+  
+  if (head.x <= snack.x + 10 && snack.x <= head.x + 10 
+    && head.y <= snack.y + 10 && snack.y <= head.y + 10) {
+
+    console.log("snack: " + snack.y + " " + snack.x)
+    console.log("head: " + head.x + " " + head.y)   
+    
+    ctx.clearRect(0, 0, canvas.width, canvas.height)
+      createSnacks();
     const n = {
       x: path[path.length - 1].x,
       y: path[path.length - 1].y,
     };
-    path.push(n);
-    maxLength += 1;
+    for (let i = 0; i <= 10; i++) {
+      path.push(n);
+    }
+    maxLength += 10;
 
     updateScore()
     clearInterval(draw_interval)
-    interval -= interval*0.005
+    interval -= interval*0.0005
     draw_interval = setInterval(drawSnake, interval)
   }
 }
@@ -185,5 +194,45 @@ function updateScore() {
   score.innerHTML=scoreTxt + scoreNum
 }
 
-let interval = 80
+let dir_x = 1
+let dir_y = 1
+let snack_direction = "v"
+
+function moveSnack() {
+  let snack = snacks[0]
+  ctx.clearRect(snack.x, snack.y, 10, 10)
+
+  if (snack.y > canvas.height-20) {
+    dir_y = -1
+  } else if (snack.y < 10) {
+    dir_y = 1
+  }
+
+  if (snack.x > canvas.width-20) {
+    dir_x = -1
+  } else if (snack.x < 10) {
+    dir_x = 1
+  }
+
+  if (Math.random() > 0.995) {
+    if (snack_direction == "v") {
+      snack_direction = "h"
+    } else {
+      snack_direction = "v"
+    }
+  } 
+
+  if (snack_direction == "h") {
+    snack.y += dir_y
+  } else{
+    snack.x += dir_x
+  }
+
+  ctx.fillStyle = "blue";
+  ctx.fillRect(snack.x, snack.y, 10, 10);
+}
+
+let interval = 12
 let draw_interval = setInterval(drawSnake, interval)
+
+let snack_intervall = setInterval(moveSnack, 20)
